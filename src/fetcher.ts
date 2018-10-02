@@ -21,24 +21,14 @@ export const graphQLFetcher = (subscriptionsClient: SubscriptionClient, fallback
 
   return (graphQLParams: any) => {
     if (subscriptionsClient && activeSubscriptionId !== null) {
-      subscriptionsClient.unsubscribe(activeSubscriptionId);
+      (<any>subscriptionsClient).unsubscribe(activeSubscriptionId);
     }
 
     if (subscriptionsClient && hasSubscriptionOperation(graphQLParams)) {
       return {
         subscribe: (observer: { error: Function, next: Function }) => {
           observer.next('Your subscription data will appear here after server publication!');
-
-          activeSubscriptionId = subscriptionsClient.subscribe({
-            query: graphQLParams.query,
-            variables: graphQLParams.variables,
-          }, function (error, result) {
-            if (error) {
-              observer.error(error);
-            } else {
-              observer.next(result);
-            }
-          });
+          activeSubscriptionId = (<any>subscriptionsClient.request(graphQLParams)).subscribe(observer.next, observer.error);
         },
       };
     } else {
